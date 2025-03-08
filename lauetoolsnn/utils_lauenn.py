@@ -3061,7 +3061,7 @@ def predict_ubmatrix(seednumber, spots_in_center, classhkl, hkl_all_class0,
             spots1_global[igrain].append(ispot)
 
         ## make copy of best rotation matrix
-        best_match[igrain].append(np.copy(first_match))
+        best_match[igrain].append(np.array(first_match, copy=True, dtype=object))
         best_matrix[igrain].append(np.copy(first_match[14]))
         mr_highest[igrain].append(np.copy(max_mr))
         mat_highest[igrain].append(np.copy(mat))
@@ -4263,8 +4263,8 @@ def calculate_strains_fromUB(s_tth, s_chi, UBmat, material_, input_params,
             linkExpMiller_fit = linkExpMiller_link
             
             arraycouples = np.array(linkedspots_fit)
-            exp_indices = np.array(arraycouples[:, 0], dtype=np.int)
-            sim_indices = np.array(arraycouples[:, 1], dtype=np.int)
+            exp_indices = np.array(arraycouples[:, 0], dtype=int)
+            sim_indices = np.array(arraycouples[:, 1], dtype=int)
         
             nb_pairs = len(exp_indices)
             Data_Q = np.array(linkExpMiller_fit)[:, 1:]
@@ -10659,7 +10659,7 @@ def predict_ub_MM(seednumber, spots_in_center, classhkl, hkl_all_class0,
             spots1_global[igrain].append(ispot)
 
         ## make copy of best rotation matrix
-        best_match[igrain].append(np.copy(first_match))
+        best_match[igrain].append(np.array(first_match, copy=True, dtype=object))
         best_matrix[igrain].append(np.copy(first_match[14]))
         mr_highest[igrain].append(np.copy(max_mr))
         mat_highest[igrain].append(np.copy(mat))
