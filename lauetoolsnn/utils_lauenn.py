@@ -495,7 +495,7 @@ def array_generator(path_, batch_size, n_classes, loc_new, write_to_console=None
                 if bs == 0:
                     temp_var = True
                 continue                
-            ## remove the non frequent class and rearrange the data
+            ## remove the non-frequent class and rearrange the data
             loc1_new = []
             loc1_new_rmv = []
             for k, i in enumerate(loc1):
@@ -1425,19 +1425,15 @@ def getpatterns_(nb, nb1, material_=None, material1_=None, emin=5, emax=23, dete
             plt.savefig(save_directory_+'//grain_'+str(img_i)+"_"+\
                                 str(img_j)+suffix_+'.png', bbox_inches='tight',format='png', dpi=1000) 
             plt.close(fig)
-        if len(codebars) != 0:
+        if len(codebars) > 0:
             if nb == 0:
-                np.savez_compressed(save_directory_+'//'+material1_+'_grain_'+str(img_i)+"_"+\
-                                    str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz', codebars, location, ori_mat, ori_mat1, flag,\
-                                    s_tth, s_chi, s_miller_ind)
+                file = save_directory_+'//'+material1_+'_grain_'+str(img_i)+"_"+str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz'
             elif nb1 == 0:
-                np.savez_compressed(save_directory_+'//'+material_+'_grain_'+str(img_i)+"_"+\
-                                    str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz', codebars, location, ori_mat, ori_mat1, flag,\
-                                    s_tth, s_chi, s_miller_ind)
+                file = save_directory_+'//'+material_+'_grain_'+str(img_i)+"_"+str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz'
             else:
-                np.savez_compressed(save_directory_+'//'+material_+"_"+material1_+'_grain_'+str(img_i)+"_"+\
-                                    str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz', codebars, location, ori_mat, ori_mat1, flag,\
-                                    s_tth, s_chi, s_miller_ind)
+                file = save_directory_+'//'+material_+"_"+material1_+'_grain_'+str(img_i)+"_"+str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz'
+            np.savez_compressed(file, codebars, location, ori_mat, ori_mat1, flag, s_tth, s_chi, s_miller_ind)
+            file_new = file.replace('_data', '_data_new')
         else:
             print("Skipping a simulation file: "+save_directory_+'//grain_'+\
                                 str(img_i)+"_"+str(img_j)+suffix_+'.npz'+"; Due to no data conforming user settings")
@@ -1711,26 +1707,8 @@ def worker_generation(inputs_queue, outputs_queue, proc_id):
             num1, _, meta = message
             flag1 = meta['flag']
             for ijk in range(len(num1)):
-                nb, nb1, material_, material1_, emin, emax, detectorparameters, pixelsize, \
-                 sortintensity, ang_maxx, step, classhkl, classhkl1, noisy_data, \
-                 remove_peaks, seed,hkl_all, lattice_material, family_hkl,\
-                 normal_hkl, index_hkl, hkl_all1, lattice_material1, family_hkl1,\
-                 normal_hkl1, index_hkl1, dim1, dim2, removeharmonics, flag,\
-                 img_i, img_j, save_directory_, odf_data, odf_data1, modelp,\
-                     misorientation_angle, max_millerindex, max_millerindex1,\
-                         general_diff_cond, crystal, crystal1, phase_always_present = num1[ijk]
-
-
-                getpatterns_(nb, nb1, material_, material1_, emin, emax, detectorparameters, pixelsize, \
-                                         sortintensity, ang_maxx, step, classhkl, classhkl1, noisy_data, \
-                                         remove_peaks, seed,hkl_all, lattice_material, family_hkl,\
-                                         normal_hkl, index_hkl, hkl_all1, lattice_material1, family_hkl1,\
-                                         normal_hkl1, index_hkl1, dim1, dim2, removeharmonics, flag,\
-                                         img_i, img_j, save_directory_, odf_data, odf_data1, modelp, \
-                                         misorientation_angle, max_millerindex, max_millerindex1, general_diff_cond, crystal, \
-                                             crystal1, phase_always_present)
-                    
-                if ijk%10 == 0 and ijk!=0:
+                getpatterns_(*num1[ijk])
+                if ijk % 10 == 0 and ijk != 0:
                     outputs_queue.put(11)
             if flag1 == 1:
                 break
@@ -8562,61 +8540,11 @@ def new_MP_function_v1(inputs_queue, outputs_queue, proc_id):
     
 def new_MP_function(argu):
     
-    files, cnt, rotation_matrix, strain_matrix, strain_matrixs,\
-            col,colx,coly,match_rate,spots_len,iR_pix,fR_pix,best_match,mat_global,\
-            check,detectorparameters,pixelsize,angbins,\
-            classhkl, hkl_all_class0, hkl_all_class1, emin, emax,\
-            material_, material1_, symmetry, symmetry1,lim_x,lim_y,\
-            strain_calculation, ind_mat, ind_mat1,\
-            model_direc, tolerance , tolerance1,\
-            matricies, ccd_label,\
-            filename_bkg,intensity_threshold,\
-            boxsize,bkg_treatment,\
-            filenameDirec, experimental_prefix,\
-            blacklist_file, text_file, \
-            files_treated,try_previous1,\
-            wb, temp_key, cor_file_directory, mode_spotCycle1,\
-            softmax_threshold_global123,mr_threshold_global123,\
-            cap_matchrate123, tolerance_strain123, tolerance_strain1231,\
-            NumberMaxofFits123,fit_peaks_gaussian_global123,\
-            FitPixelDev_global123,coeff123,coeff_overlap,\
-            material0_limit, material1_limit, use_previous_UBmatrix_name1,\
-            material_phase_always_present1, crystal, crystal1, strain_free_parameters = argu
-                        
-    strain_matrix12, strain_matrixs12, \
-        rotation_matrix12, col12, \
-            colx12, coly12,\
-    match_rate12, mat_global12, cnt12,\
-        files_treated12, spots_len12, \
-            iR_pix12, fR_pix12, check12, best_match12 = predict_preprocessMultiProcess(files, cnt, 
-                                               rotation_matrix,strain_matrix,strain_matrixs,
-                                               col,colx,coly,match_rate,spots_len,iR_pix,fR_pix,best_match,
-                                               mat_global,
-                                               check,detectorparameters,pixelsize,angbins,
-                                               classhkl, hkl_all_class0, hkl_all_class1, emin, emax,
-                                               material_, material1_, symmetry, symmetry1,lim_x,lim_y,
-                                               strain_calculation, ind_mat, ind_mat1,
-                                               model_direc, tolerance, tolerance1,
-                                               matricies, ccd_label,
-                                               filename_bkg,intensity_threshold,
-                                               boxsize,bkg_treatment,
-                                               filenameDirec, experimental_prefix,
-                                               blacklist_file, text_file, 
-                                               files_treated,try_previous1,
-                                               wb, temp_key, cor_file_directory, mode_spotCycle1,
-                                               softmax_threshold_global123,mr_threshold_global123,
-                                               cap_matchrate123, tolerance_strain123,
-                                               tolerance_strain1231,NumberMaxofFits123,
-                                               fit_peaks_gaussian_global123,
-                                               FitPixelDev_global123, coeff123,coeff_overlap,
-                                               material0_limit,material1_limit,
-                                               use_previous_UBmatrix_name1,
-                                               material_phase_always_present1,
-                                               crystal, crystal1, strain_free_parameters)
+    (strain_matrix12, strain_matrixs12, rotation_matrix12, col12, colx12, coly12, match_rate12, mat_global12, cnt12,
+     files_treated12, spots_len12, iR_pix12, fR_pix12, check12, best_match12) = predict_preprocessMultiProcess(*argu)
     meta = {}
-    return strain_matrix12, strain_matrixs12, rotation_matrix12, col12, \
-                 colx12, coly12, match_rate12, mat_global12, cnt12, meta, \
-                 files_treated12, spots_len12, iR_pix12, fR_pix12, best_match12, check12
+    return (strain_matrix12, strain_matrixs12, rotation_matrix12, col12, colx12, coly12, match_rate12, mat_global12,
+            cnt12, meta, files_treated12, spots_len12, iR_pix12, fR_pix12, best_match12, check12)
                  
                  
 def prepare_LP_NB(nbgrains, nbgrains1, material_, verbose, material1_=None, seed=None, sortintensity=False,
@@ -8905,7 +8833,7 @@ def generate_multimat_dataset(  material_=["Cu"],
                 elif (j >= grains_nb_simulate*0.5) and (j < grains_nb_simulate*0.75):
                     noisy_data = False
                     remove_peaks = True
-                elif (j >= grains_nb_simulate*0.75):
+                elif j >= grains_nb_simulate*0.75:
                     noisy_data = True
                     remove_peaks = True
             else:
