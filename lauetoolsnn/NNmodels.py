@@ -142,9 +142,9 @@ def model_arch_general(n_bins, n_outputs, kernel_coeff = 0.0005, bias_coeff = 0.
     ## Compile model
     if lr != None:
         otp = tf.keras.optimizers.Adam(learning_rate=lr)
-        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=metricsNN)
     else:
-        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=metricsNN)
     
     if verbose == 1:
         model.summary()
@@ -212,7 +212,7 @@ def model_arch_CNN_DNN_optimized(shape,
     model = Model(inputs, outputs)
     ## Compile model
     otp = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=[metricsNN])
+    model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=metricsNN)
 
     if verbose == 1:
         model.summary()
@@ -264,9 +264,9 @@ def model_arch_general_optimized(n_bins, n_outputs, kernel_coeff = 0.0005, bias_
     ## Compile model
     if lr != None:
         otp = tf.keras.optimizers.Adam(learning_rate=lr)
-        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=metricsNN)
     else:
-        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=metricsNN)
     
     if verbose == 1:
         model.summary()
@@ -304,9 +304,9 @@ def model_arch_general_onelayer(n_bins, n_outputs,
     ## Compile model
     if lr != None:
         otp = tf.keras.optimizers.Adam(learning_rate=lr)
-        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=metricsNN)
     else:
-        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=metricsNN)
     
     if verbose == 1:
         model.summary()
@@ -575,9 +575,9 @@ def user_defined_model(n_bins, n_outputs,
     ## Compile model
     if lr != None:
         otp = tf.keras.optimizers.Adam(learning_rate=lr)
-        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer=otp, metrics=metricsNN)
     else:
-        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=[metricsNN])
+        model.compile(loss='categorical_crossentropy', optimizer="adam", metrics=metricsNN)
     
     if verbose == 1:
         model.summary()

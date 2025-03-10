@@ -510,7 +510,7 @@ if __name__ == '__main__':     #enclosing required because of multiprocessing
         ms = ModelCheckpoint(save_directory+"//best_val_acc_model.h5", 
                              monitor='val_accuracy', 
                              mode='max', save_best_only=True)
-        lc = LoggingCallback(None, None, None, model, model_name)
+        # lc = LoggingCallback(None, None, None, model, model_name)
 
         ## Fitting function
         stats_model = model.fit(
@@ -520,8 +520,8 @@ if __name__ == '__main__':     #enclosing required because of multiprocessing
                                 validation_data=testing_data_generator,
                                 validation_steps=val_steps_per_epoch,
                                 verbose=1,
-                                class_weight=class_weights,
-                                callbacks=[es, ms, lc]
+                                # class_weight=class_weights,
+                                callbacks=[es, ms]
                                 )
         
         # Save model config and weights
@@ -529,7 +529,7 @@ if __name__ == '__main__':     #enclosing required because of multiprocessing
         with open(model_name+".json", "w") as json_file:
             json_file.write(model_json)            
         # serialize weights to HDF5
-        model.save_weights(model_name+".h5")
+        model.save_weights(model_name+".weights.h5")
         print("Saved model to disk")
         
         print( "Training Accuracy: "+str( stats_model.history['accuracy'][-1]))
@@ -574,7 +574,7 @@ if __name__ == '__main__':     #enclosing required because of multiprocessing
         x_test, y_test = vali_array(save_directory+"//testing_data", 50, len(classhkl), loc_new, print)
         y_test = np.argmax(y_test, axis=-1)
         y_pred = np.argmax(model.predict(x_test), axis=-1)
-        print(classification_report(y_test, y_pred))
+        # print(classification_report(y_test, y_pred))  # Do not print, too long
     
     if run_prediction:
         if prediction_GUI:
@@ -713,7 +713,7 @@ if __name__ == '__main__':     #enclosing required because of multiprocessing
             else:
                 ind_mat = None
                 ind_mat1 = None
-            load_weights = model_direc + "//model_"+prefix1+".h5"
+            load_weights = model_direc + "//model_"+prefix1+".weights.h5"
             wb = read_hdf5(load_weights)
             temp_key = list(wb.keys())
             
