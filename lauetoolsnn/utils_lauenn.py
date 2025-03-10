@@ -1434,6 +1434,19 @@ def getpatterns_(nb, nb1, material_=None, material1_=None, emin=5, emax=23, dete
                 file = save_directory_+'//'+material_+"_"+material1_+'_grain_'+str(img_i)+"_"+str(img_j)+suffix_+"_nb"+str(nb)+str(nb1)+'.npz'
             np.savez_compressed(file, codebars, location, ori_mat, ori_mat1, flag, s_tth, s_chi, s_miller_ind)
             file_new = file.replace('_data', '_data_new')
+            remaining_idx = np.setdiff1d(np.arange(len(s_tth)), skip_hkl)
+            np.savez_compressed(
+                file_new,
+                codebars=codebars,
+                location=location,
+                ori_mat=ori_mat,
+                ori_mat1=ori_mat1,
+                flag=flag,
+                s_tth=s_tth,
+                s_chi=s_chi,
+                s_miller_ind=s_miller_ind,
+                remaining_idx=remaining_idx
+            )
         else:
             print("Skipping a simulation file: "+save_directory_+'//grain_'+\
                                 str(img_i)+"_"+str(img_j)+suffix_+'.npz'+"; Due to no data conforming user settings")
@@ -7397,6 +7410,8 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
     save_directory_ = save_directory+"//"+type_
     if not os.path.exists(save_directory_):
         os.makedirs(save_directory_)
+    if not os.path.exists(save_directory_.replace('_data', '_data_new')):
+        os.makedirs(save_directory_.replace('_data', '_data_new'))
 
     try:
         with open(save_directory+"//classhkl_data_"+material_+".pickle", "rb") as input_file:
