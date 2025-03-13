@@ -54,12 +54,13 @@ except:
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 metricsNN = [
-            keras.metrics.FalseNegatives(name="fn"),
-            keras.metrics.FalsePositives(name="fp"),
-            keras.metrics.TrueNegatives(name="tn"),
-            keras.metrics.TruePositives(name="tp"),
-            keras.metrics.Precision(name="precision"),
-            keras.metrics.Recall(name="accuracy"),
+            # keras.metrics.FalseNegatives(name="fn"),
+            # keras.metrics.FalsePositives(name="fp"),
+            # keras.metrics.TrueNegatives(name="tn"),
+            # keras.metrics.TruePositives(name="tp"),
+            # keras.metrics.Precision(name="precision"),
+            # keras.metrics.Recall(name="recall"),
+            keras.metrics.CategoricalAccuracy(name="accuracy"),
             ]
 
 class LoggingCallback(Callback):
