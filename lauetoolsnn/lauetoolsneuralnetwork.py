@@ -1547,6 +1547,8 @@ class Window(QMainWindow):
         save_directory_ = self.save_directory+"//"+type_
         if not os.path.exists(save_directory_):
             os.makedirs(save_directory_)
+        if not os.path.exists(save_directory_ + '_new'):
+            os.makedirs(save_directory_ + '_new')
 
         try:
             with open(self.save_directory+"//classhkl_data_"+material_+".pickle", "rb") as input_file:
