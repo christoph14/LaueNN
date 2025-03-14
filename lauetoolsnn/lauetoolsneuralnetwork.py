@@ -2457,7 +2457,7 @@ class Window(QMainWindow):
         else:
             model_name = self.save_directory+"//model_"+self.material_+prefix
             
-        log = LoggingCallback(self.write_to_console, self.progress, QApplication, self.model, model_name)
+        # log = LoggingCallback(self.write_to_console, self.progress, QApplication, self.model, model_name)
 
         stats_model = self.model.fit(
                                     training_data_generator, 
@@ -2466,8 +2466,9 @@ class Window(QMainWindow):
                                     validation_data=testing_data_generator,
                                     validation_steps=val_steps_per_epoch,
                                     verbose=1,
-                                    class_weight=self.class_weights,
-                                    callbacks=[es, ms, log] # es, ms, clr
+                                    # class_weight=self.class_weights,
+                                    # callbacks=[es, ms, log] # es, ms, clr
+                                    callbacks=[es, ms] # es, ms, clr
                                     )
         
         self.progress.setValue(epochs*steps_per_epoch)
