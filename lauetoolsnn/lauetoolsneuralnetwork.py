@@ -202,12 +202,12 @@ if default_initialization:
         fn1 = material_global
         if exp_prefix_global == None:
             exp_prefix_global = material_global + "_"
-        weightfile_global = modelfile_global + "//" + "model_" + material_global + ".h5"
+        weightfile_global = modelfile_global + "//" + "model_" + material_global + ".weights.h5"
     else:
         fn1  = material_global + "_" + material1_global
         if exp_prefix_global == None:
             exp_prefix_global = material_global + "_"+material1_global + "_"
-        weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".h5"
+        weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".weights.h5"
     main_directory = resource_path("models",  verbose=0)
     hkl_max_global = "5"
     elements_global = "all"
@@ -800,12 +800,12 @@ class Window(QMainWindow):
         modelfile_global = main_directory + "//" + fn
         if material_global == material1_global:
             if model_weight_file == "none":
-                weightfile_global = modelfile_global + "//" + "model_" + material_global + ".h5"
+                weightfile_global = modelfile_global + "//" + "model_" + material_global + ".weights.h5"
             else:
                 weightfile_global = model_weight_file
         else:
             if model_weight_file == "none":
-                weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".h5"
+                weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".weights.h5"
             else:
                 weightfile_global = model_weight_file
         
@@ -1420,9 +1420,9 @@ class Window(QMainWindow):
         ##exp directory
         modelfile_global = self.save_directory
         if material_global == material1_global:
-            weightfile_global = modelfile_global + "//" + "model_" + material_global + ".h5"
+            weightfile_global = modelfile_global + "//" + "model_" + material_global + ".weights.h5"
         else:
-            weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".h5"
+            weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".weights.h5"
 
         hkl_max_global = str(self.n)
         elements_global = str(self.elements)
@@ -2477,7 +2477,7 @@ class Window(QMainWindow):
             with open(model_name+".json", "w") as json_file:
                 json_file.write(model_json)            
         # serialize weights to HDF5
-        self.model.save_weights(model_name+".h5")
+        self.model.save_weights(model_name+".weights.h5")
         self.write_to_console("Saved model to disk")
 
         self.write_to_console( "Training Accuracy: "+str( stats_model.history['accuracy'][-1]))
@@ -4035,12 +4035,12 @@ class AnotherWindowParams(QWidget):
             modelfile_global = self.modelDirecSave + "//" + fn
             if material_global == material1_global:
                 if model_weight_file == "none":
-                    weightfile_global = modelfile_global + "//" + "model_" + material_global + ".h5"
+                    weightfile_global = modelfile_global + "//" + "model_" + material_global + ".weights.h5"
                 else:
                     weightfile_global = model_weight_file
             else:
                 if model_weight_file == "none":
-                    weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".h5"
+                    weightfile_global = modelfile_global + "//" + "model_" + material_global + "_" + material1_global + ".weights.h5"
                 else:
                     weightfile_global = model_weight_file
                     
