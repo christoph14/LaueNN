@@ -1233,19 +1233,12 @@ def getpatterns_(nb, nb1, material_=None, material1_=None, emin=5, emax=23, dete
         - figure of the 2D histogram of the Miller Indices and their relative orientations.
 
     """
-    s_tth, s_chi, s_miller_ind, _, _, _, \
-        ori_mat, ori_mat1 = simulatemultiplepatterns(nb, nb1, seed=seed, key_material=material_, 
-                                                                        key_material1=material1_,
-                                                                        emin=emin, emax=emax,
-                                                                         detectorparameters=detectorparameters,
-                                                                         pixelsize=pixelsize,
-                                                                         sortintensity = sortintensity, 
-                                                                         dim1=dim1, dim2=dim2, 
-                                                                         removeharmonics=removeharmonics,
-                                                                         flag=flag, odf_data=odf_data,
-                                                                         odf_data1=odf_data1, mode=modelp,
-                                                                         misorientation_angle=misorientation_angle,
-                                                                         phase_always_present=phase_always_present)
+    s_tth, s_chi, s_miller_ind, _, _, _, ori_mat, ori_mat1, s_grain_id = simulatemultiplepatterns(
+        nb, nb1, seed=seed, key_material=material_, key_material1=material1_, emin=emin, emax=emax,
+        detectorparameters=detectorparameters, pixelsize=pixelsize, sortintensity = sortintensity, dim1=dim1, dim2=dim2,
+        removeharmonics=removeharmonics, flag=flag, odf_data=odf_data, odf_data1=odf_data1, mode=modelp,
+        misorientation_angle=misorientation_angle, phase_always_present=phase_always_present
+    )
     if noisy_data:
         ## apply random gaussian type noise to the data (tth and chi)
         ## So adding noise to the angular distances
@@ -1271,6 +1264,7 @@ def getpatterns_(nb, nb1, material_=None, material1_=None, emin=5, emax=23, dete
             s_tth = np.delete(s_tth, indices_remove)
             s_chi = np.delete(s_chi, indices_remove)
             s_miller_ind = np.delete(s_miller_ind, indices_remove, axis=0)
+            s_grain_id = np.delete(s_grain_id, indices_remove)
         else:
             print("No peaks can be removed; due to very low number of hkl spots; could be the unit cell is too tiny")
             print(nb, nb1, material_, material1_, odf_data, odf_data1)
@@ -1445,7 +1439,8 @@ def getpatterns_(nb, nb1, material_=None, material1_=None, emin=5, emax=23, dete
                 s_tth=s_tth,
                 s_chi=s_chi,
                 s_miller_ind=s_miller_ind,
-                remaining_idx=remaining_idx
+                remaining_idx=remaining_idx,
+                s_grain_id=s_grain_id,
             )
         else:
             print("Skipping a simulation file: "+save_directory_+'//grain_'+\
@@ -1540,7 +1535,7 @@ def simulatemultiplepatterns(nbUBs, nbUBs1, seed=123, key_material=None, key_mat
                 g[igr] = Euler2OrientationMatrix((phi1, phi, phi2))
                 orientation_send1.append(g[igr])                
 
-    l_tth, l_chi, l_miller_ind, l_posx, l_posy, l_E, l_intensity = [],[],[],[],[],[],[]
+    l_tth, l_chi, l_miller_ind, l_posx, l_posy, l_E, l_intensity, l_grain_id = [], [], [], [], [], [], [], []
     
     if flag == 1:
         for grainind in range(nbUBs):
@@ -1628,6 +1623,7 @@ def simulatemultiplepatterns(nbUBs, nbUBs1, seed=123, key_material=None, key_mat
             l_posy.append(s_posy)
             l_E.append(s_E)
             l_intensity.append(s_intensity)
+            l_grain_id.append(np.full_like(s_tth, grainind))
             
         if (key_material != key_material1):
             for grainind in range(nbUBs1):
@@ -1650,6 +1646,7 @@ def simulatemultiplepatterns(nbUBs, nbUBs1, seed=123, key_material=None, key_mat
                 l_posy.append(s_posy)
                 l_E.append(s_E)
                 l_intensity.append(s_intensity)
+                l_grain_id.append(np.full_like(s_tth, grainind))
     
     ## add constant UB matrix to the simulated data
     if phase_always_present != None:
@@ -1680,6 +1677,7 @@ def simulatemultiplepatterns(nbUBs, nbUBs1, seed=123, key_material=None, key_mat
         l_posy.append(s_posy)
         l_E.append(s_E)
         l_intensity.append(s_intensity)
+        l_grain_id.append(np.full_like(s_tth, -1))
     
     #flat_list = [item for sublist in l for item in sublist]
     s_tth = np.array([item for sublist in l_tth for item in sublist])
@@ -1688,8 +1686,9 @@ def simulatemultiplepatterns(nbUBs, nbUBs1, seed=123, key_material=None, key_mat
     s_posx = np.array([item for sublist in l_posx for item in sublist])
     s_posy = np.array([item for sublist in l_posy for item in sublist])
     s_E = np.array([item for sublist in l_E for item in sublist])
-    s_intensity=np.array([item for sublist in l_intensity for item in sublist])
-    
+    s_intensity = np.array([item for sublist in l_intensity for item in sublist])
+    s_grain_id = np.array([item for sublist in l_grain_id for item in sublist])
+
     if sortintensity:
         indsort = np.argsort(s_intensity)[::-1]
         s_tth=np.take(s_tth, indsort)
@@ -1699,8 +1698,9 @@ def simulatemultiplepatterns(nbUBs, nbUBs1, seed=123, key_material=None, key_mat
         s_posy=np.take(s_posy, indsort)
         s_E=np.take(s_E, indsort)
         s_intensity=np.take(s_intensity, indsort)
-        
-    return s_tth, s_chi, s_miller_ind, s_posx, s_posy, s_intensity, orientation_send, orientation_send1
+        s_grain_id = np.take(s_grain_id, indsort)
+
+    return s_tth, s_chi, s_miller_ind, s_posx, s_posy, s_intensity, orientation_send, orientation_send1, s_grain_id
 
 def chunker_list(seq, size):
     return (seq[i::size] for i in range(size))
