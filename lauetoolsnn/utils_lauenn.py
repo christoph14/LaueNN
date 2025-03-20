@@ -1228,7 +1228,7 @@ def getpatterns_(nb, nb1, material_=None, material1_=None, emin=5, emax=23, dete
         - odf_data1 : data of an orientaiton distribution function
         - modelp : model of the ODF
     
-    The ouput of the code are the following figures:
+    The output of the code are the following figures:
         - figure of the simulated powder data
         - figure of the 2D histogram of the Miller Indices and their relative orientations.
 
@@ -7393,15 +7393,50 @@ def _round_indices(indices, max_index=12):
 # =============================================================================
 
 def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mode=0, 
-                         nb_grains=1, nb_grains1=1, grains_nb_simulate=100, data_realism = False, 
+                         nb_grains=1, nb_grains1=1, grains_nb_simulate=100, data_realism=False,
                          detectorparameters=None, pixelsize=None, type_="training",
-                         var0 = 0, dim1=2048, dim2=2048, removeharmonics=1, save_directory="",
-                         write_to_console=None, emin=5, emax=22, modelp = "random",
-                         misorientation_angle = None, general_diff_rules = False, 
-                         crystal = None, crystal1 = None, include_scm=False, 
-                         matrix_phase_always_present=None): 
-    """
-    works for all symmetries now.
+                         var0=0, dim1=2048, dim2=2048, removeharmonics=1, save_directory="",
+                         write_to_console=None, emin=5, emax=22, modelp="random",
+                         misorientation_angle=None, general_diff_rules=False,
+                         crystal=None, crystal1=None, include_scm=False,
+                         matrix_phase_always_present=None, generate_range=True):
+    """Generate a dataset with Laue images.
+
+    Parameters
+    ----------
+    material_
+    material1_
+    ang_maxx
+    step
+    mode
+    nb_grains
+    nb_grains1
+    grains_nb_simulate
+    data_realism
+    detectorparameters
+    pixelsize
+    type_
+    var0
+    dim1
+    dim2
+    removeharmonics
+    save_directory
+    write_to_console
+    emin
+    emax
+    modelp
+    misorientation_angle
+    general_diff_rules
+    crystal
+    crystal1
+    include_scm
+    matrix_phase_always_present
+    generate_range : bool
+        If true, generate images with one up to nb_grains grains. If False, only generate images with nb_grains.
+
+    Returns
+    -------
+
     """
     from multiprocessing import Process, Queue, cpu_count
     ncpu = cpu_count()
@@ -7413,26 +7448,26 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
     if not os.path.exists(save_directory_.replace('_data', '_data_new')):
         os.makedirs(save_directory_.replace('_data', '_data_new'))
 
+    # Load the class hkl data (whatever that is)
     try:
         with open(save_directory+"//classhkl_data_"+material_+".pickle", "rb") as input_file:
-            classhkl, _, _, n, _, \
-                hkl_all_class, _, lattice_material, symmetry = cPickle.load(input_file)
+            classhkl, _, _, n, _, hkl_all_class, _, lattice_material, symmetry = cPickle.load(input_file)
         max_millerindex = int(n)
         max_millerindex1 = int(n)
         if material_ != material1_:
             with open(save_directory+"//classhkl_data_"+material1_+".pickle", "rb") as input_file:
-                classhkl1, _, _, n1, _, \
-                    hkl_all_class1, _, lattice_material1, symmetry1 = cPickle.load(input_file)
+                classhkl1, _, _, n1, _, hkl_all_class1, _, lattice_material1, symmetry1 = cPickle.load(input_file)
             max_millerindex1 = int(n1)
-    except:
+    except FileNotFoundError:
         write_to_console("Class HKL library data not found, please run it first")
         return None
 
-    if var0==1:
-        codebars, angbins = get_material_data(material_ = material_, ang_maxx = ang_maxx, step = step,
-                                                   hkl_ref=n, classhkl=classhkl)
-        loc = np.array([ij for ij in range(len(classhkl))])
+    if var0 == 1:
+        codebars, angbins = get_material_data(
+            material_=material_, ang_maxx=ang_maxx, step=step,hkl_ref=n, classhkl=classhkl
+        )
 
+        # Check if there exist different spots with the same angular distribution
         write_to_console("Verifying if two different HKL class have same angular distribution (can be very time consuming depending on the symmetry)")
         index = []
         list_appended = []
@@ -7451,18 +7486,16 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
 
         if len(index) == 0:
             write_to_console("Great! No two HKL class have same angular distribution")
-            #np.savez_compressed(save_directory_+'//grain_init.npz', codebars, loc)
         else:
             write_to_console("Some HKL's have similar angular distribution; this will likely reduce the accuracy of the neural network; verify if symmetry matrix and other parameters are properly configured; this is just for the dictionary; keep eye on the dataset being generated for training")
             write_to_console("This is likely the result of the symmetry operation available in a user_defined space group; this shouldn't affect the general accuracy of the model")
             np.savez_compressed(save_directory+'//conflict_angular_distribution_debug.npz', codebars, index)           
         np.savez_compressed(save_directory+'//grain_classhkl_angbin.npz', classhkl, angbins)
-             
+
+        # Do the same for the second material
         if material_ != material1_:
             codebars, angbins = get_material_data(material_ = material1_, ang_maxx = ang_maxx, step = step,
                                                    hkl_ref=n1, classhkl=classhkl1)
-            ind_offset = loc[-1] + 1
-            loc = np.array([ind_offset + ij for ij in range(len(classhkl1))])
             write_to_console("Verifying if two different HKL class have same angular distribution (can be very time consuming depending on the symmetry)")
             index = []
             list_appended = []
@@ -7481,7 +7514,6 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
 
             if len(index) == 0:
                 write_to_console("Great! No two HKL class have same angular distribution")
-                #np.savez_compressed(save_directory_+'//grain_init1.npz', codebars, loc)
             else:
                 write_to_console("Some HKL's have similar angular distribution; this will likely reduce the accuracy of the neural network; verify if symmetry matrix and other parameters are properly configured; this is just for the dictionary; keep eye on the dataset being generated for training")
                 write_to_console("This is likely the result of the symmetry operation available in a user_defined space group; this shouldn't affect the general accuracy of the model")
@@ -7499,9 +7531,11 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
         for j in hkl_all_class1.keys():
             normal_hkl1_ = np.vstack((normal_hkl1_, hkl_all_class1[j]["family"]))
         normal_hkl1 = np.delete(normal_hkl1_, 0, axis =0)
-    
+
+    # Assign a class to every miller index TODO assign a unique class independently of the material
     index_hkl = [j for j,k in enumerate(hkl_all_class.keys()) for i in range(len(hkl_all_class[k]["family"]))]
-    
+
+    # TODO What to do for multiple materials?
     if material_ != material1_:
         ind_offset = index_hkl[-1] + 1
         index_hkl1 = [ind_offset+j for j,k in enumerate(hkl_all_class1.keys()) for i in range(len(hkl_all_class1[k]["family"]))]
@@ -7543,9 +7577,7 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
     _outputs_queue = Queue()
     _worker_process = {}
     for i in range(ncpu):
-        _worker_process[i]= Process(target=worker_generation, args=(_inputs_queue, 
-                                                                          _outputs_queue, 
-                                                                          i+1),)
+        _worker_process[i]= Process(target=worker_generation, args=(_inputs_queue, _outputs_queue, i+1),)
     for i in range(ncpu):
         _worker_process[i].start()            
     time.sleep(0.1)    
@@ -7605,11 +7637,14 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
                 # print("Laue group 1")
         ## list of combination of training dataset
         ## to be seen if this improves the prediction quality
-        ## increases time significantly to generate the data 
-        nb_grains_list = list(range(nb_grains+1))
-        nb_grains1_list = list(range(nb_grains1+1))
-        list_permute = list(itertools.product(nb_grains_list, nb_grains1_list))
-        list_permute.pop(0) ## removing the 0,0 index
+        ## increases time significantly to generate the data
+        if generate_range:
+            nb_grains_list = list(range(nb_grains+1))
+            nb_grains1_list = list(range(nb_grains1+1))
+            list_permute = list(itertools.product(nb_grains_list, nb_grains1_list))
+            list_permute.pop(0) ## removing the 0,0 index
+        else:
+            list_permute = [(nb_grains, nb_grains1)]
 
         # Idea 2 Or generate a database upto n grain LP
         values = []
@@ -7791,7 +7826,11 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
                 print("Laue group 1")
 
         values = []
-        for i in range(nb_grains):
+        if generate_range:
+            grain_range = range(nb_grains)
+        else:
+            grain_range = [nb_grains - 1]
+        for i in grain_range:
             for j in range(grains_nb_simulate):
                 if data_realism:
                     ## three types of data augmentation to mimic reality ?
@@ -8017,7 +8056,6 @@ def generate_dataset(material_="Cu", material1_="Cu", ang_maxx=18.,step=0.1, mod
         for ijk in range(int(ncpu)):
             _inputs_queue.put((chunks_mp[ijk], ncpu, meta))
             
-    max_progress = max_progress
     while True:
         count = 0
         for i in range(ncpu):
