@@ -23,7 +23,7 @@ TODO:
     # zoom without changing the image reshape
 """
 __author__ = "Ravi raj purohit PURUSHOTTAM RAJ PUROHIT, CRG-IF BM32 @ ESRF"
-
+import tensorflow as tf
 import warnings
 warnings.filterwarnings('ignore')
 
